@@ -147,7 +147,7 @@ impl IceTransportRunner {
                     if res.is_err() {
                         break;
                     }
-                    if *self.state_rx.borrow() == IceTransportState::Closed {
+                    if *self.state_rx.borrow() == IceTransportState::Closed || *self.state_rx.borrow() == IceTransportState::Failed {
                         break;
                     }
                 }

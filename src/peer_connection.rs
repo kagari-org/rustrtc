@@ -403,20 +403,21 @@ impl PeerConnection {
             let ice_gathering_state_tx = pc.inner.ice_gathering_state.clone();
             let inner_weak_gathering = inner_weak.clone();
             tokio::spawn(async move {
-                let gathering_loop = run_gathering_loop(
+                let gathering_loop = tokio::spawn(run_gathering_loop(
                     ice_transport_gathering,
                     ice_gathering_state_tx,
                     inner_weak_gathering,
-                );
+                ));
 
-                let dtls_loop = run_ice_dtls_loop(
+                let dtls_loop = tokio::spawn(run_ice_dtls_loop(
                     ice_transport,
                     ice_connection_state_tx,
                     dtls_role_rx,
                     inner_weak,
-                );
+                ));
+                let ice_runner = tokio::spawn(ice_runner);
 
-                tokio::join!(gathering_loop, dtls_loop, ice_runner);
+                let _ = tokio::join!(gathering_loop, dtls_loop, ice_runner);
             });
         }
         pc

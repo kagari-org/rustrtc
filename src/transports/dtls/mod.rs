@@ -1545,9 +1545,11 @@ impl DtlsInner {
             ctx.message_seq += 1;
         }
 
+        let close_notified = close_rx.notified();
+        tokio::pin!(close_notified);
         loop {
             tokio::select! {
-                _ = close_rx.notified() => {
+                _ = &mut close_notified => {
                     // Send CloseNotify
                     if let Some(keys) = &ctx.session_keys {
                         let alert = vec![1, 0]; // Level: Warning (1), Description: CloseNotify (0)
